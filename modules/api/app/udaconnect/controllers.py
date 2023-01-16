@@ -51,32 +51,32 @@ class LocationResource(Resource):
 #     else:
 #         raise Exception('Unsupported HTTP request type')
 
-@api.route('/persons', method=['GET', 'POST'])
-def persons():
-    if request.method == 'GET':
-        persons: List[Person] = PersonService.retrieve_all()
-        return persons
-    elif request.method == 'POST':
-        payload = request.get_json()
-        new_person: Person = PersonServe.create(payload)
-        return new_person
-    else:
-        raise Exception('Unsupported HTTP request type')
-
-
-# @api.route("/persons")
-# class PersonsResource(Resource):
-#     @accepts(schema=PersonSchema)
-#     @responds(schema=PersonSchema)
-#     def post(self) -> Person:
-#         payload = request.get_json()
-#         new_person: Person = PersonService.create(payload)
-#         return new_person
-
-#     @responds(schema=PersonSchema, many=True)
-#     def get(self) -> List[Person]:
+# @api.route('/persons', method=['GET', 'POST'])
+# def persons():
+#     if request.method == 'GET':
 #         persons: List[Person] = PersonService.retrieve_all()
 #         return persons
+#     elif request.method == 'POST':
+#         payload = request.get_json()
+#         new_person: Person = PersonServe.create(payload)
+#         return new_person
+#     else:
+#         raise Exception('Unsupported HTTP request type')
+
+
+@api.route("/persons")
+class PersonsResource(Resource):
+    @accepts(schema=PersonSchema)
+    @responds(schema=PersonSchema)
+    def post(self) -> Person:
+        payload = request.get_json()
+        new_person: Person = PersonService.create(payload)
+        return new_person
+
+    @responds(schema=PersonSchema, many=True)
+    def get(self) -> List[Person]:
+        persons: List[Person] = PersonService.retrieve_all()
+        return persons
 
 
 @api.route("/persons/<person_id>")
