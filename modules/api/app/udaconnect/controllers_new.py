@@ -19,43 +19,11 @@ api = Namespace("UdaConnect", description="Connections via geolocation.")  # noq
 
 # TODO: This needs better exception handling
 
-
-@api.route("/locations")
-@api.route("/locations/<location_id>")
-@api.param("location_id", "Unique ID for a given Location", _in="query")
-class LocationResource(Resource):
-    @accepts(schema=LocationSchema)
-    @responds(schema=LocationSchema)
-    def post(self) -> Location:
-        request.get_json()
-        location: Location = LocationService.create(request.get_json())
-        return location
-
-    @responds(schema=LocationSchema)
-    def get(self, location_id) -> Location:
-        location: Location = LocationService.retrieve(location_id)
-        return location
-
-
-#### CHANGES
-
-# @api.route('/person', methods=['GET', 'POST'])
-# def person():
-#     if request.method == 'GET':
-#         person_id = request.get_json()['person_id']
-#         person: Person = PersonService.retrieve(person_id)
-#     elif request.method == 'POST':
-#         payload = request.get_json()
-#         new_person: Person = PersonServe.create(payload)
-#         return new_person
-#     else:
-#         raise Exception('Unsupported HTTP request type')
-
-@api.route('/persons', method=['GET', 'POST'])
-def persons():
+@api.route('/person', methods=['GET', 'POST'])
+def person():
     if request.method == 'GET':
-        persons: List[Person] = PersonService.retrieve_all()
-        return persons
+        person_id = request.get_json()['person_id']
+        person: Person = PersonService.retrieve(person_id)
     elif request.method == 'POST':
         payload = request.get_json()
         new_person: Person = PersonServe.create(payload)
@@ -63,20 +31,26 @@ def persons():
     else:
         raise Exception('Unsupported HTTP request type')
 
+@api.route('/persons', method=['GET'])
+def persons():
+    if request.method == 'GET':
+        return True
+    else:
+        raise Exception('Unsupported HTTP request type')
 
-# @api.route("/persons")
-# class PersonsResource(Resource):
-#     @accepts(schema=PersonSchema)
-#     @responds(schema=PersonSchema)
-#     def post(self) -> Person:
-#         payload = request.get_json()
-#         new_person: Person = PersonService.create(payload)
-#         return new_person
+@api.route("/persons")
+class PersonsResource(Resource):
+    @accepts(schema=PersonSchema)
+    @responds(schema=PersonSchema)
+    def post(self) -> Person:
+        payload = request.get_json()
+        new_person: Person = PersonService.create(payload)
+        return new_person
 
-#     @responds(schema=PersonSchema, many=True)
-#     def get(self) -> List[Person]:
-#         persons: List[Person] = PersonService.retrieve_all()
-#         return persons
+    @responds(schema=PersonSchema, many=True)
+    def get(self) -> List[Person]:
+        persons: List[Person] = PersonService.retrieve_all()
+        return persons
 
 
 @api.route("/persons/<person_id>")
