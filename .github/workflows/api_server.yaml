@@ -2,7 +2,7 @@ name: "API server - Dockerhub"
 # triggers for action to run
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 # workflow
 jobs:
