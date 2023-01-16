@@ -30,6 +30,6 @@ jobs:
       with:
         context: "{{defaultContext}}:modules/frontend"
         file: "./Dockerfile"
-        platforms: linux/amd64, linux/arm64
+        #platforms: linux/amd64, linux/arm64
         push: true
         tags: rednotion/udacity_nd064_mp_client:latest
