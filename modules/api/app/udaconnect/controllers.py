@@ -37,7 +37,7 @@ class LocationResource(Resource):
         return location
 
 
-#### CHANGES
+#### CHANGES 
 
 # @api.route('/person', methods=['GET', 'POST'])
 # def person():
