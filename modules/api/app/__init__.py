@@ -3,6 +3,10 @@ from flask_cors import CORS
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
 
+from kafka import KafkaConsumer
+from app.udaconnect.services import LocationService
+from app.udaconnect.schemas import LocationSchema
+
 db = SQLAlchemy()
 
 
@@ -18,6 +22,14 @@ def create_app(env=None):
 
     register_routes(api, app)
     db.init_app(app)
+
+    # Set up kafka consumer
+    TOPIC_NAME = 'locations'
+    consumer = KafkaConsumer(TOPIC_NAME)
+    for message in consumer:
+        # save locations to DB
+        location: Location = LocationService.create(request.get_json())
+        print(location)
 
     @app.route("/health")
     def health():

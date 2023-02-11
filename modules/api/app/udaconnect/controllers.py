@@ -12,6 +12,11 @@ from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
 
+from kafka import KafkaProducer
+TOPIC_NAME = "locations"
+KAFKA_SERVER = "localhost:9092"
+
+
 DATE_FORMAT = "%Y-%m-%d"
 
 api = Namespace("UdaConnect", description="Connections via geolocation.")  # noqa
@@ -29,39 +34,15 @@ class LocationResource(Resource):
     def post(self) -> Location:
         request.get_json()
         location: Location = LocationService.create(request.get_json())
+        producer = KafkaProducer(bootstrap_servers=KAFKA_SERVER)
+        producer.send(TOPIC_NAME, request.get_json())
+        producer.flush()
         return location
 
     @responds(schema=LocationSchema)
     def get(self, location_id) -> Location:
         location: Location = LocationService.retrieve(location_id)
         return location
-
-
-#### CHANGES 
-
-# @api.route('/person', methods=['GET', 'POST'])
-# def person():
-#     if request.method == 'GET':
-#         person_id = request.get_json()['person_id']
-#         person: Person = PersonService.retrieve(person_id)
-#     elif request.method == 'POST':
-#         payload = request.get_json()
-#         new_person: Person = PersonServe.create(payload)
-#         return new_person
-#     else:
-#         raise Exception('Unsupported HTTP request type')
-
-# @api.route('/persons', method=['GET', 'POST'])
-# def persons():
-#     if request.method == 'GET':
-#         persons: List[Person] = PersonService.retrieve_all()
-#         return persons
-#     elif request.method == 'POST':
-#         payload = request.get_json()
-#         new_person: Person = PersonServe.create(payload)
-#         return new_person
-#     else:
-#         raise Exception('Unsupported HTTP request type')
 
 
 @api.route("/persons")
