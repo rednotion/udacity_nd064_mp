@@ -23,13 +23,19 @@ def create_app(env=None):
     register_routes(api, app)
     db.init_app(app)
 
-    # Set up kafka consumer
-    TOPIC_NAME = 'locations'
-    consumer = KafkaConsumer(TOPIC_NAME)
-    for message in consumer:
-        # save locations to DB
-        location: Location = LocationService.create(request.get_json())
-        print(location)
+    @app.before_request
+    def before_request():
+        # Set up a Kafka producer
+        TOPIC_NAME = 'locations'
+        KAFKA_SERVER = 'kafka-headless.default.svc.cluster.local:9092'
+        producer = KafkaProducer(
+            bootstrap_servers=KAFKA_SERVER,
+            api_version=(0,10,1),
+            value_serializer=lambda x: json.dumps(x).encode('utf-8')
+        )
+        # Setting Kafka to g enables us to use this
+        # in other parts of our application
+        g.kafka_producer = producer
 
     @app.route("/health")
     def health():
