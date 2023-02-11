@@ -8,6 +8,9 @@ from app.udaconnect.schemas import ConnectionSchema, LocationSchema, PersonSchem
 from geoalchemy2.functions import ST_AsText, ST_Point
 from sqlalchemy.sql import text
 
+from app import g
+from kafka import KafkaConsumer
+
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("udaconnect-api")
 
@@ -101,12 +104,26 @@ class LocationService:
             logger.warning(f"Unexpected data format in payload: {validation_results}")
             raise Exception(f"Invalid payload: {validation_results}")
 
-        new_location = Location()
-        new_location.person_id = location["person_id"]
-        new_location.creation_time = location["creation_time"]
-        new_location.coordinate = ST_Point(location["latitude"], location["longitude"])
-        db.session.add(new_location)
-        db.session.commit()
+        # kafka
+        consumer = KafkaConsumer(
+            "locations",
+            bootstrap_servers="kafka:9092"
+        )
+        for message in consumer:
+            data = json.loads(message.value.decode('utf-8'))
+            new_location = Location()
+            new_location.person_id = data["person_id"]
+            new_location.creation_time = data["creation_time"]
+            new_location.coordinate = ST_Point(data["latitude"], location["longitude"])
+            db.session.add(new_location)
+            db.session.commit()
+
+        # new_location = Location()
+        # new_location.person_id = location["person_id"]
+        # new_location.creation_time = location["creation_time"]
+        # new_location.coordinate = ST_Point(location["latitude"], location["longitude"])
+        # db.session.add(new_location)
+        # db.session.commit()
 
         return new_location
 

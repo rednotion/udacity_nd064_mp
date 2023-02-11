@@ -26,11 +26,8 @@ def create_app(env=None):
     @app.before_request
     def before_request():
         # Set up a Kafka producer
-        TOPIC_NAME = 'locations'
-        KAFKA_SERVER = 'kafka-headless.default.svc.cluster.local:9092'
         producer = KafkaProducer(
-            bootstrap_servers=KAFKA_SERVER,
-            api_version=(0,10,1),
+            bootstrap_servers="kafka:9092",
             value_serializer=lambda x: json.dumps(x).encode('utf-8')
         )
         # Setting Kafka to g enables us to use this

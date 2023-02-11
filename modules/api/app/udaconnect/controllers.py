@@ -13,8 +13,8 @@ from flask_restx import Namespace, Resource
 from typing import Optional, List
 
 from kafka import KafkaProducer
+from app import g
 TOPIC_NAME = "locations"
-KAFKA_SERVER = "localhost:9092"
 
 
 DATE_FORMAT = "%Y-%m-%d"
@@ -33,11 +33,18 @@ class LocationResource(Resource):
     @responds(schema=LocationSchema)
     def post(self) -> Location:
         request.get_json()
-        location: Location = LocationService.create(request.get_json())
-        producer = KafkaProducer(bootstrap_servers=KAFKA_SERVER)
-        producer.send(TOPIC_NAME, request.get_json())
+        #location: Location = LocationService.create(request.get_json())
+        
+        # post to kafka queue
+        kafka_data = json.dumps(request.get_json())
+        producer = g.kafka_producer
+        producer.send(TOPIC_NAME, value=kafka_data)
         producer.flush()
-        return location
+
+        sample_response = request.get_json()
+        sample_response["id"] = 10
+
+        return sample_response # location
 
     @responds(schema=LocationSchema)
     def get(self, location_id) -> Location:
