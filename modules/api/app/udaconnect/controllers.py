@@ -12,10 +12,7 @@ from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
 
-from kafka import KafkaProducer
 from app import g
-TOPIC_NAME = "locations"
-
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -38,7 +35,7 @@ class LocationResource(Resource):
         # post to kafka queue
         kafka_data = json.dumps(request.get_json())
         producer = g.kafka_producer
-        producer.send(TOPIC_NAME, value=kafka_data)
+        producer.send("locations", value=kafka_data)
         producer.flush()
 
         sample_response = request.get_json()

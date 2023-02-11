@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
 
-from kafka import KafkaConsumer
+from kafka import KafkaProducer
 from app.udaconnect.services import LocationService
 from app.udaconnect.schemas import LocationSchema
 
