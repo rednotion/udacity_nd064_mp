@@ -114,7 +114,7 @@ class LocationService:
             new_location = Location()
             new_location.person_id = data["person_id"]
             new_location.creation_time = data["creation_time"]
-            new_location.coordinate = ST_Point(data["latitude"], location["longitude"])
+            new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
             db.session.add(new_location)
             db.session.commit()
 

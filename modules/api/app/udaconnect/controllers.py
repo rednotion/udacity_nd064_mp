@@ -12,6 +12,7 @@ from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
 import json
+from geoalchemy2.functions import ST_AsText, ST_Point
 
 from app import g
 
@@ -34,9 +35,16 @@ class LocationResource(Resource):
 
         # location: Location = LocationService.create(request.get_json())
 
-        sample_response = request.get_json()
-        sample_response["id"] = 10
-        return sample_response  # location
+        data = request.get_json()
+        new_location = Location()
+        new_location.person_id = data["person_id"]
+        new_location.creation_time = data["creation_time"]
+        new_location.coordinate = ST_Point(data["latitude"], location["longitude"])
+        return new_location
+
+        # sample_response = request.get_json()
+        # sample_response["id"] = 10
+        # return sample_response  # location
 
         # # post to kafka queue
         # kafka_data = json.dumps(request.get_json())
