@@ -1,11 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, g
 from flask_cors import CORS
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
 
 from kafka import KafkaProducer
-from app.udaconnect.services import LocationService
-from app.udaconnect.schemas import LocationSchema
+# from app.udaconnect.services import LocationService
+# from app.udaconnect.schemas import LocationSchema
+import json
 
 db = SQLAlchemy()
 
@@ -22,6 +23,8 @@ def create_app(env=None):
 
     register_routes(api, app)
     db.init_app(app)
+
+    print("db initiated just fine")
 
     @app.before_request
     def before_request():

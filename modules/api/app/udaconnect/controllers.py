@@ -11,6 +11,7 @@ from flask import request
 from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
+import json
 
 from app import g
 
@@ -29,19 +30,21 @@ class LocationResource(Resource):
     @accepts(schema=LocationSchema)
     @responds(schema=LocationSchema)
     def post(self) -> Location:
-        request.get_json()
-        #location: Location = LocationService.create(request.get_json())
-        
+        # request.get_json() # why is this useless get json here
+
         # post to kafka queue
         kafka_data = json.dumps(request.get_json())
         producer = g.kafka_producer
         producer.send("locations", value=kafka_data)
         producer.flush()
 
-        sample_response = request.get_json()
-        sample_response["id"] = 10
+        location: Location = LocationService.create(request.get_json())
 
-        return sample_response # location
+        return location
+
+        # sample_response = request.get_json()
+        # sample_response["id"] = 10
+        # return sample_response  # location
 
     @responds(schema=LocationSchema)
     def get(self, location_id) -> Location:
