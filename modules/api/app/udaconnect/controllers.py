@@ -32,15 +32,17 @@ class LocationResource(Resource):
     def post(self) -> Location:
         # request.get_json() # why is this useless get json here
 
-        # post to kafka queue
-        kafka_data = json.dumps(request.get_json())
-        producer = g.kafka_producer
-        producer.send("locations", value=kafka_data)
-        producer.flush()
+        # location: Location = LocationService.create(request.get_json())
 
-        location: Location = LocationService.create(request.get_json())
+        sample_response = request.get_json()
+        sample_response["id"] = 10
+        return sample_response  # location
 
-        return location
+        # # post to kafka queue
+        # kafka_data = json.dumps(request.get_json())
+        # producer = g.kafka_producer
+        # producer.send("locations", value=kafka_data)
+        # producer.flush()
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
