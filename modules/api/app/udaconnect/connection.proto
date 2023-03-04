@@ -1,18 +1,37 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 message ConnectionMessage {
   int32 person_id = 1;
-  datetime start_date = 2;
-  datetime end_date = 3;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
   int32 distance = 4;
 }
 
+message LocationType {
+  int32 person_id = 1;
+  int32 id = 2;
+  google.protobuf.Timestamp creation_time = 3;
+  string longitude = 4;
+  string latitude = 5;
+}
+
+message PersonType {
+  string first_name = 1;
+  string last_name = 2;
+  string company_name = 3;
+  int32 id = 4;
+}
+
 message ConnectionResult {
-	# location
-	# person
-	# need to check what is the API format returned
+  LocationType location = 1;
+  PersonType person = 2;
+}
+
+message AllConnections {
+  repeated ConnectionResult results = 1;
 }
 
 service ConnectionService {
-    rpc GetConnections(ItemMessage) returns (ConnectionResult);
+    rpc GetConnections(ConnectionMessage) returns (AllConnections);
 }

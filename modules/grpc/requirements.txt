@@ -1,0 +1,4 @@
+grpcio==1.51.3
+protobuf
+psycopg2
+sqlalchemy

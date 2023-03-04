@@ -12,12 +12,17 @@ from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
 import json
-from geoalchemy2.functions import ST_AsText, ST_Point
 
+# kafka & grpc
 from app import g
+import grpc
+import person_pb2
+import person_pb2_grpc
+
 # temporary
 from kafka import KafkaConsumer
 from app import db
+from geoalchemy2.functions import ST_AsText, ST_Point
 
 import logging
 log = logging.getLogger('controllers.py')
@@ -120,9 +125,27 @@ class PersonsResource(Resource):
     @accepts(schema=PersonSchema)
     @responds(schema=PersonSchema)
     def post(self) -> Person:
+
         payload = request.get_json()
-        new_person: Person = PersonService.create(payload)
-        return new_person
+
+        # grpc implementation
+        channel = grpc.insecure_channel("localhost:5005")
+        current_app.logger.info("connected to grpc channel")
+        stub = person_pb2_grpc.PersonEndpointStub(channel)
+        current_app.logger.info("initialized stub")
+        payload = person_pb2.PersonDetails(
+            first_name=payload["first_name"],
+            last_name=payload["last_name"],
+            company_name=payload["company_name"]
+        )
+        current_app.logger.info("payload class")
+        results = stub.GetConnections(payload)
+        current_app.logger.info("connections retrieved")
+        current_app.logger.info(results)
+
+        return results
+        # new_person: Person = PersonService.create(payload)
+        # return new_person
 
     @responds(schema=PersonSchema, many=True)
     def get(self) -> List[Person]:
