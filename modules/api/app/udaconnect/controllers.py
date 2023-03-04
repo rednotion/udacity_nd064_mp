@@ -82,12 +82,19 @@ class LocationResource(Resource):
             current_app.logger.info(data)
             new_location = Location()
             current_app.logger.info("new location class created")
-            new_location.person_id = data["person_id"]
+            new_location.person_id = int(data["person_id"])
             current_app.logger.info("person ID appended")
-            new_location.creation_time = data["creation_time"]
-            current_app.logger.info("creation_time appended")
-            new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
-            current_app.logger.info("st point appended")
+            try:
+                new_location.creation_time = data["creation_time"]
+                current_app.logger.info("creation_time appended")
+            except:
+                datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
+                current_app.logger.info("had to convert")
+            try:
+                new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+                current_app.logger.info("st point appended")
+            except:
+                current_app.logger.info("pass point")
             db.session.add(new_location)
             current_app.logger.info("added to db")
             db.session.commit()
