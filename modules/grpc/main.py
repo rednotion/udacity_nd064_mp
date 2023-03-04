@@ -7,13 +7,15 @@ import person_pb2_grpc
 
 # for services
 from sqlalchemy import create_engine, insert, select, MetaData, Table, String, Column, Integer
+import psycopg2
 
 # Shared variables
 DBNAME = "geoconnections"
 HOST = "postgres"
 PORT = "5432"
 USER = "ct_admin"
-PASSWORD = "d293aW1zb3NlY3VyZQ=="
+# PASSWORD = "d293aW1zb3NlY3VyZQ=="
+PASSWORD = "db_password"
 # init db
 ## dialect+driver://username:password@host:port/database
 engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}')
@@ -35,18 +37,36 @@ person_table = Table(
 # Server
 class PersonService(person_pb2_grpc.PersonEndpointServicer):
     def Create(self, request, context):
-
-        stmt = insert(person_table).values(
-            first_name=request.first_name,
-            last_name=request.last_name,
-            company_name=request.company_name
+        print("request received")
+        conn = psycopg2.connect(
+            dbname="geoconnections",
+            host="postgres",
+            port="5432",
+            user="ct_admin",
+            password="db_password"
         )
-        with engine.connect() as conn:
-            # print("connection estab")
-            result = conn.execute(stmt)
+        cursor = conn.cursor()
+        print("curosr established")
+        postgres_insert_query = """ INSERT INTO Person (ID, FIRST_NAME, LAST_NAME, COMPANY_NAME) VALUES (%s,%s,%s)"""
+        record_to_insert = (
+            request.first_name,
+            request.last_name,
+            request.company_name
+        )
+        cursor.execute(postgres_insert_query, record_to_insert)
+        print("executed")
+
+        # stmt = insert(person_table).values(
+        #     first_name=request.first_name,
+        #     last_name=request.last_name,
+        #     company_name=request.company_name
+        # )
+        # with engine.connect() as conn:
+        #     # print("connection estab")
+        #     result = conn.execute(stmt)
 
         response = person_pb2.PersonRow(
-            id=result.inserted_primary_key[0],
+            id=100, #result.inserted_primary_key[0],
             first_name=request.first_name,
             last_name=request.last_name,
             company_name=request.company_name

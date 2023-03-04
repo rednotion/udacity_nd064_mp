@@ -16,8 +16,8 @@ import json
 # kafka & grpc
 from app import g
 import grpc
-import person_pb2
-import person_pb2_grpc
+import app.udaconnect.person_pb2 as person_pb2
+import app.udaconnect.person_pb2_grpc as person_pb2_grpc
 
 # temporary
 from kafka import KafkaConsumer
@@ -125,21 +125,20 @@ class PersonsResource(Resource):
     @accepts(schema=PersonSchema)
     @responds(schema=PersonSchema)
     def post(self) -> Person:
-
+        current_app.logger.info("post person request received")
         payload = request.get_json()
 
         # grpc implementation
-        channel = grpc.insecure_channel("localhost:5005")
-        current_app.logger.info("connected to grpc channel")
-        stub = person_pb2_grpc.PersonEndpointStub(channel)
-        current_app.logger.info("initialized stub")
         payload = person_pb2.PersonDetails(
             first_name=payload["first_name"],
             last_name=payload["last_name"],
             company_name=payload["company_name"]
         )
-        current_app.logger.info("payload class")
+
+        channel = grpc.insecure_channel("grpc:5005")
+        stub = person_pb2_grpc.PersonEndpointStub(channel)
         results = stub.Create(payload)
+
         current_app.logger.info("connections retrieved")
         current_app.logger.info(results)
 
@@ -150,7 +149,7 @@ class PersonsResource(Resource):
     @responds(schema=PersonSchema, many=True)
     def get(self) -> List[Person]:
         # grpc implementation
-        channel = grpc.insecure_channel("localhost:5005")
+        channel = grpc.insecure_channel("grpc:30002")
         current_app.logger.info("connected to grpc channel")
         stub = person_pb2_grpc.PersonEndpointStub(channel)
         current_app.logger.info("initialized stub")
@@ -180,7 +179,8 @@ class PersonResource(Resource):
 @api.param("distance", "Proximity to a given user in meters", _in="query")
 class ConnectionDataResource(Resource):
     @responds(schema=ConnectionSchema, many=True)
-    def get(self, person_id) -> ConnectionSchema:
+    def get(self) -> ConnectionSchema:
+        person_id = int(request.args["person_id"])
         start_date: datetime = datetime.strptime(
             request.args["start_date"], DATE_FORMAT
         )
