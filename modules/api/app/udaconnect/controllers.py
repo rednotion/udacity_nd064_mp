@@ -61,9 +61,9 @@ class LocationResource(Resource):
         kafka_data = json.dumps(request.get_json())
         producer = g.kafka_producer
         producer.send("locations", value=kafka_data)
-        current_app.logger("sent to kafka_producer")
+        current_app.logger.info("sent to kafka_producer")
         producer.flush()
-        current_app.logger("flushed producer")
+        current_app.logger.info("flushed producer")
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
@@ -77,7 +77,7 @@ class LocationResource(Resource):
         current_app.logger("loaded consumer")
         index = 0
         for message in consumer:
-            current_app.logger(f"processing message {index}")
+            current_app.logger.info(f"processing message {index}")
             data = json.loads(message.value.decode('utf-8'))
             current_app.logger(data)
             new_location = Location()
