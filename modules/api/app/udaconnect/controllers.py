@@ -78,7 +78,7 @@ class LocationResource(Resource):
         index = 0
         for message in consumer:
             current_app.logger.info(f"processing message {index}")
-            current_app.logger.info(message.value.decode('utf-8'))
+            # current_app.logger.info(message.value.decode('utf-8'))
             data = json.loads(message.value.decode('utf-8'))
             current_app.logger.info(data)
             current_app.logger.info(type(data))
