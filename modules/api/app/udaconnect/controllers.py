@@ -138,8 +138,6 @@ class PersonsResource(Resource):
         channel = grpc.insecure_channel("grpc:5005")
         stub = person_pb2_grpc.PersonEndpointStub(channel)
         results = stub.Create(payload)
-
-        current_app.logger.info("connections retrieved")
         current_app.logger.info(results)
 
         return results
@@ -149,17 +147,18 @@ class PersonsResource(Resource):
     @responds(schema=PersonSchema, many=True)
     def get(self) -> List[Person]:
         # grpc implementation
-        channel = grpc.insecure_channel("grpc:30002")
-        current_app.logger.info("connected to grpc channel")
+        channel = grpc.insecure_channel("grpc:5005")
         stub = person_pb2_grpc.PersonEndpointStub(channel)
-        current_app.logger.info("initialized stub")
         payload = person_pb2.Empty()
-        results = stub.GetConnections(payload)
-        current_app.logger.info("connections retrieved")
-        current_app.logger.info(results)
+        people = stub.GetAll(payload)
+        current_app.logger.info("all people retrieved")
+        # for ind, res in enumerate(people.results):
+        #     current_app.logger.info(f"=========== {ind} =========")
+        #     current_app.logger.info(type(res))
+        #     current_app.logger.info(res)
 
         # persons: List[Person] = PersonService.retrieve_all()
-        return results
+        return [res for res in people.results]
 
 
 @api.route("/persons/<person_id>")
@@ -167,8 +166,15 @@ class PersonsResource(Resource):
 class PersonResource(Resource):
     @responds(schema=PersonSchema)
     def get(self, person_id) -> Person:
-        person: Person = PersonService.retrieve(person_id)
-        return person
+        channel = grpc.insecure_channel("grpc:5005")
+        stub = person_pb2_grpc.PersonEndpointStub(channel)
+        payload = person_pb2.PersonID(id=int(person_id))
+        results = stub.Get(payload)
+        current_app.logger.info(f"person with ID = {person_id} retrieved")
+        current_app.logger.info(results)
+        return results
+        # person: Person = PersonService.retrieve(person_id)
+        # return person
 
 
 # @api.route("/persons/<person_id>/connection")

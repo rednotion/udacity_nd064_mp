@@ -25,7 +25,7 @@ engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}')
 
 metadata = MetaData()
 person_table = Table(
-    'Person',
+    'person',
     metadata,
     Column("id", Integer, primary_key=True),
     Column("first_name", String),
@@ -36,37 +36,27 @@ person_table = Table(
 
 # Server
 class PersonService(person_pb2_grpc.PersonEndpointServicer):
-    def Create(self, request, context):
-        print("request received")
-        conn = psycopg2.connect(
-            dbname="geoconnections",
-            host="postgres",
-            port="5432",
-            user="ct_admin",
-            password="db_password"
-        )
-        cursor = conn.cursor()
-        print("curosr established")
-        postgres_insert_query = """ INSERT INTO Person (ID, FIRST_NAME, LAST_NAME, COMPANY_NAME) VALUES (%s,%s,%s)"""
-        record_to_insert = (
-            request.first_name,
-            request.last_name,
-            request.company_name
-        )
-        cursor.execute(postgres_insert_query, record_to_insert)
-        print("executed")
+    def __init__(self):
+        meta = MetaData()
+        meta.reflect(bind=engine)
+        self.person_table = meta.tables["person"]
 
-        # stmt = insert(person_table).values(
-        #     first_name=request.first_name,
-        #     last_name=request.last_name,
-        #     company_name=request.company_name
-        # )
-        # with engine.connect() as conn:
-        #     # print("connection estab")
-        #     result = conn.execute(stmt)
+    def Create(self, request, context):
+        print("create request received")
+        stmt = insert(self.person_table).values(
+            first_name=request.first_name,
+            last_name=request.last_name,
+            company_name=request.company_name
+        )
+        with engine.connect() as conn:
+            print("connection estab")
+            result = conn.execute(stmt)
+            print("executed")
+            conn.commit()
+            print("committed")
 
         response = person_pb2.PersonRow(
-            id=100, #result.inserted_primary_key[0],
+            id=result.inserted_primary_key[0],
             first_name=request.first_name,
             last_name=request.last_name,
             company_name=request.company_name
@@ -74,7 +64,7 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
         return response
 
     def Get(self, request, context):
-        stmt = select([person_table]).where(person_table.c.id == request.id)
+        stmt = select(self.person_table).where(self.person_table.c.id == request.id)
         with engine.connect() as conn:
             result = conn.execute(stmt)
         try:
@@ -91,8 +81,9 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
             raise LookupError("ID not found in DB")
 
     def GetAll(self, request, context):
+        print("GETALL request received")
         list_of_person_rows = []
-        stmt = select([person_table])
+        stmt = select(self.person_table)
         with engine.connect() as conn:
             results = conn.execute(stmt)
         for row in results:
@@ -105,9 +96,9 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
             )
             list_of_person_rows.append(person)
 
-        response = person_pb2.AllPersons(
-            results=list_of_person_rows
-        )
+        response = person_pb2.AllPersons()
+        response.results.extend(list_of_person_rows)
+        print(response)
         return response
 
 
