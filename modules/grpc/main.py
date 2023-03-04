@@ -15,7 +15,7 @@ HOST = "postgres"
 PORT = "5432"
 USER = "ct_admin"
 # PASSWORD = "d293aW1zb3NlY3VyZQ=="
-PASSWORD = "db_password"
+PASSWORD = "wowimsosecure"
 # init db
 ## dialect+driver://username:password@host:port/database
 engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}')
