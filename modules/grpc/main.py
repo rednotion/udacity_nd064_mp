@@ -7,7 +7,6 @@ import person_pb2_grpc
 import time
 
 # for services
-import psycopg2
 from sqlalchemy import create_engine, insert, MetaData, Table, String, Column, Integer
 
 # Server
@@ -21,11 +20,7 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
         #     user="ct_admin",
         #     password="d293aW1zb3NlY3VyZQ=="
         # )
-        DBNAME = "geoconnections"
-        HOST = "postgres"
-        PORT = "5432"
-        USER = "ct_admin"
-        PASSWORD = "d293aW1zb3NlY3VyZQ=="
+
         # conn = psycopg2.connect(
         #     dbname="postgres",
         #     host="postgresql://localhost",
@@ -33,8 +28,16 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
         #     user="elizabethlim",
         # )
         # dialect+driver://username:password@host:port/database
-        # engine = create_engine('postgresql://127.0.0.1:5432/postgres')
+        DBNAME = "geoconnections"
+        HOST = "postgres"
+        PORT = "5432"
+        USER = "ct_admin"
+        PASSWORD = "d293aW1zb3NlY3VyZQ=="
         engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}')
+        
+        ## for local testing
+        # engine = create_engine('postgresql://localhost:5432/postgres')
+
         metadata = MetaData()
         person_table = Table(
             'Person',
@@ -55,8 +58,6 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
         with engine.connect() as conn:
             print("connection estab")
             result = conn.execute(stmt)
-            conn.commit()
-            print(result)
 
         # cursor = conn.cursor()
         # postgres_insert_query = """ INSERT INTO Person (ID, FIRST_NAME, LAST_NAME, COMPANY_NAME) VALUES (%s,%s,%s)"""
@@ -77,7 +78,7 @@ class PersonService(person_pb2_grpc.PersonEndpointServicer):
         # db.session.commit()
 
         response = person_pb2.PersonRow(
-            id=999,
+            id=result.inserted_primary_key[0],
             first_name=request.first_name,
             last_name=request.last_name,
             company_name=request.company_name
