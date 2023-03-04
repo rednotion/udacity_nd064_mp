@@ -29,18 +29,21 @@ api = Namespace("UdaConnect", description="Connections via geolocation.")  # noq
 @api.param("location_id", "Unique ID for a given Location", _in="query")
 class LocationResource(Resource):
     @accepts(schema=LocationSchema)
-    @responds(schema=LocationSchema)
+    # @responds(schema=LocationSchema)
     def post(self) -> Location:
         # request.get_json() # why is this useless get json here
+        print("request received")
 
-        location: Location = LocationService.create(request.get_json())
+        # location: Location = LocationService.create(request.get_json())
+
+        # print("location created")
 
         # data = request.get_json()
         # new_location = Location()
         # new_location.person_id = data["person_id"]
-        # new_location.creation_time = data["creation_time"]
+        # new_location.creation_time = datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
         # new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
-        return location
+        return "works!"
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
