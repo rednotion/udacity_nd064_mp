@@ -33,14 +33,14 @@ class LocationResource(Resource):
     def post(self) -> Location:
         # request.get_json() # why is this useless get json here
 
-        # location: Location = LocationService.create(request.get_json())
+        location: Location = LocationService.create(request.get_json())
 
-        data = request.get_json()
-        new_location = Location()
-        new_location.person_id = data["person_id"]
-        new_location.creation_time = data["creation_time"]
-        new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
-        return new_location
+        # data = request.get_json()
+        # new_location = Location()
+        # new_location.person_id = data["person_id"]
+        # new_location.creation_time = data["creation_time"]
+        # new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+        return location
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
