@@ -14,7 +14,7 @@ from typing import Optional, List
 import json
 from geoalchemy2.functions import ST_AsText, ST_Point
 
-from app import g
+from app import g logger
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -32,17 +32,20 @@ class LocationResource(Resource):
     # @responds(schema=LocationSchema)
     def post(self) -> Location:
         # request.get_json() # why is this useless get json here
-        print("request received")
+        logger.info("request received")
 
         # location: Location = LocationService.create(request.get_json())
 
-        # print("location created")
-
-        # data = request.get_json()
-        # new_location = Location()
-        # new_location.person_id = data["person_id"]
-        # new_location.creation_time = datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
-        # new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+        data = request.get_json()
+        logger.info(data)
+        new_location = Location()
+        logger.info("new location class created")
+        new_location.person_id = data["person_id"]
+        logger.info("person ID appended")
+        new_location.creation_time = datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
+        logger.info("creation time")
+        new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+        logger.info("STpoint")
         return "works!"
 
         # sample_response = request.get_json()
