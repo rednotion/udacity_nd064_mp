@@ -139,7 +139,7 @@ class PersonsResource(Resource):
             company_name=payload["company_name"]
         )
         current_app.logger.info("payload class")
-        results = stub.GetConnections(payload)
+        results = stub.Create(payload)
         current_app.logger.info("connections retrieved")
         current_app.logger.info(results)
 
@@ -149,8 +149,18 @@ class PersonsResource(Resource):
 
     @responds(schema=PersonSchema, many=True)
     def get(self) -> List[Person]:
-        persons: List[Person] = PersonService.retrieve_all()
-        return persons
+        # grpc implementation
+        channel = grpc.insecure_channel("localhost:5005")
+        current_app.logger.info("connected to grpc channel")
+        stub = person_pb2_grpc.PersonEndpointStub(channel)
+        current_app.logger.info("initialized stub")
+        payload = person_pb2.Empty()
+        results = stub.GetConnections(payload)
+        current_app.logger.info("connections retrieved")
+        current_app.logger.info(results)
+
+        # persons: List[Person] = PersonService.retrieve_all()
+        return results
 
 
 @api.route("/persons/<person_id>")
@@ -162,7 +172,9 @@ class PersonResource(Resource):
         return person
 
 
-@api.route("/persons/<person_id>/connection")
+# @api.route("/persons/<person_id>/connection")
+@api.route("/connections")
+@api.param("person_id", "Given user ID", _in="query")
 @api.param("start_date", "Lower bound of date range", _in="query")
 @api.param("end_date", "Upper bound of date range", _in="query")
 @api.param("distance", "Proximity to a given user in meters", _in="query")

@@ -19,6 +19,11 @@ class PersonEndpointStub(object):
                 request_serializer=person__pb2.PersonDetails.SerializeToString,
                 response_deserializer=person__pb2.PersonRow.FromString,
                 )
+        self.Get = channel.unary_unary(
+                '/PersonEndpoint/Get',
+                request_serializer=person__pb2.PersonID.SerializeToString,
+                response_deserializer=person__pb2.PersonRow.FromString,
+                )
         self.GetAll = channel.unary_unary(
                 '/PersonEndpoint/GetAll',
                 request_serializer=person__pb2.Empty.SerializeToString,
@@ -35,6 +40,11 @@ class PersonEndpointServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Get(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetAll(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -50,6 +60,11 @@ def add_PersonEndpointServicer_to_server(servicer, server):
                     request_deserializer=person__pb2.PersonDetails.FromString,
                     response_serializer=person__pb2.PersonRow.SerializeToString,
             ),
+            'Get': grpc.unary_unary_rpc_method_handler(
+                    servicer.Get,
+                    request_deserializer=person__pb2.PersonID.FromString,
+                    response_serializer=person__pb2.PersonRow.SerializeToString,
+            ),
             'GetAll': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAll,
                     request_deserializer=person__pb2.Empty.FromString,
@@ -59,6 +74,7 @@ def add_PersonEndpointServicer_to_server(servicer, server):
     generic_handler = grpc.method_handlers_generic_handler(
             'PersonEndpoint', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
+
 
  # This class is part of an EXPERIMENTAL API.
 class PersonEndpoint(object):
@@ -77,6 +93,23 @@ class PersonEndpoint(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/PersonEndpoint/Create',
             person__pb2.PersonDetails.SerializeToString,
+            person__pb2.PersonRow.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Get(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/PersonEndpoint/Get',
+            person__pb2.PersonID.SerializeToString,
             person__pb2.PersonRow.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
