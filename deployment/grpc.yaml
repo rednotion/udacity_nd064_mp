@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - image: rednotion/udacity_nd064_mp_grpc:latest
-        name: udaconnect-api
+        name: grpc
         imagePullPolicy: Always
         env:
         - name: DB_USERNAME
