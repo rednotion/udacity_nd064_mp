@@ -79,7 +79,7 @@ class LocationResource(Resource):
         for message in consumer:
             current_app.logger.info(f"processing message {index}")
             data = json.loads(message.value.decode('utf-8'))
-            current_app.logger(data)
+            current_app.logger.info(data)
             new_location = Location()
             current_app.logger.info("new location class created")
             new_location.person_id = data["person_id"]
