@@ -7,14 +7,20 @@ from app.udaconnect.schemas import (
     PersonSchema,
 )
 from app.udaconnect.services import ConnectionService, LocationService, PersonService
-from flask import request
+from flask import request, current_app
 from flask_accepts import accepts, responds
 from flask_restx import Namespace, Resource
 from typing import Optional, List
 import json
 from geoalchemy2.functions import ST_AsText, ST_Point
 
-from app import g, logger
+from app import g
+# temporary
+from kafka import KafkaConsumer
+from app import db
+
+import logging
+log = logging.getLogger('controllers.py')
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -32,35 +38,62 @@ class LocationResource(Resource):
     # @responds(schema=LocationSchema)
     def post(self) -> Location:
         # request.get_json() # why is this useless get json here
-        logger.info("request received")
+        current_app.logger.info("request received")
 
         # location: Location = LocationService.create(request.get_json())
 
-        data = request.get_json()
-        logger.info(data)
-        new_location = Location()
-        logger.info("new location class created")
-        new_location.person_id = data["person_id"]
-        logger.info("person ID appended")
-        new_location.creation_time = datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
-        logger.info("creation time")
-        new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
-        logger.info("STpoint")
-        return "works!"
+        # data = request.get_json()
+        # current_app.logger.info(data)
+        # new_location = Location()
+        # current_app.logger.info("new location class created")
+        # new_location.person_id = data["person_id"]
+        # current_app.logger.info("person ID appended")
+        # new_location.creation_time = datetime.strptime(data["creation_time"], "%Y-%m-%d %H:%M:%S")
+        # current_app.logger.info("creation time")
+        # new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+        # current_app.logger.info("STpoint")
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
         # return sample_response  # location
 
-        # # post to kafka queue
-        # kafka_data = json.dumps(request.get_json())
-        # producer = g.kafka_producer
-        # producer.send("locations", value=kafka_data)
-        # producer.flush()
+        # post to kafka queue
+        kafka_data = json.dumps(request.get_json())
+        producer = g.kafka_producer
+        producer.send("locations", value=kafka_data)
+        current_app.logger("sent to kafka_producer")
+        producer.flush()
+        current_app.logger("flushed producer")
 
         # sample_response = request.get_json()
         # sample_response["id"] = 10
         # return sample_response  # location
+
+        # kafka
+        consumer = KafkaConsumer(
+            "locations",
+            bootstrap_servers="kafka:9092"
+        )
+        current_app.logger("loaded consumer")
+        index = 0
+        for message in consumer:
+            current_app.logger(f"processing message {index}")
+            data = json.loads(message.value.decode('utf-8'))
+            current_app.logger(data)
+            new_location = Location()
+            current_app.logger.info("new location class created")
+            new_location.person_id = data["person_id"]
+            current_app.logger.info("person ID appended")
+            new_location.creation_time = data["creation_time"]
+            current_app.logger.info("creation_time appended")
+            new_location.coordinate = ST_Point(data["latitude"], data["longitude"])
+            current_app.logger.info("st point appended")
+            db.session.add(new_location)
+            current_app.logger.info("added to db")
+            db.session.commit()
+            current_app.logger.info("commit to DB")
+
+        return "exited"
 
     @responds(schema=LocationSchema)
     def get(self, location_id) -> Location:
