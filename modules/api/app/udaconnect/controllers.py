@@ -78,7 +78,11 @@ class LocationResource(Resource):
         index = 0
         for message in consumer:
             current_app.logger.info(f"processing message {index}")
+            current_app.logger.info(message.value.decode('utf-8'))
             data = json.loads(message.value.decode('utf-8'))
+            if type(data) == str:
+                current_app.logger.info("data is string type")
+                data = dict(data)
             current_app.logger.info(data)
             new_location = Location()
             current_app.logger.info("new location class created")
