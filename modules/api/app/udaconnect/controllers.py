@@ -14,7 +14,7 @@ from typing import Optional, List
 import json
 from geoalchemy2.functions import ST_AsText, ST_Point
 
-from app import g logger
+from app import g, logger
 
 DATE_FORMAT = "%Y-%m-%d"
 
